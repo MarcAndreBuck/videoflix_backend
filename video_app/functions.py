@@ -5,6 +5,7 @@ from django.conf import settings
 
 from video_app.models import Video
 
+
 VIDEO_RESOLUTIONS = {
     "480p": 480,
     "720p": 720,
