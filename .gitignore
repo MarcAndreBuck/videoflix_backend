@@ -42,7 +42,4 @@ Thumbs.db
 # Local tests
 auth_app/tests/
 core/test_settings.py
-
-# Coverage
-.coverage
-htmlcov/
+video_app/tests/
