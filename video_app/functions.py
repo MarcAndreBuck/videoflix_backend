@@ -32,9 +32,14 @@ def build_hls_command(input_path, output_path, height):
     return [
         "ffmpeg",
         "-i", str(input_path),
+        "-map", "0:v:0",
+        "-map", "0:a:0",
         "-vf", f"scale=-2:{height}",
         "-c:v", "libx264",
         "-c:a", "aac",
+        "-ar", "48000",
+        "-ac", "2",
+        "-hls_list_size", "0",
         "-f", "hls",
         str(output_path / "index.m3u8"),
     ]

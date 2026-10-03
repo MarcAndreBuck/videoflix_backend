@@ -33,17 +33,27 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost").split(",")
+
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS", default="http://localhost:4200").split(",")
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 FRONTEND_URL = os.getenv(
     "FRONTEND_URL",
-    "http://localhost:5500",
+    "http://127.0.0.1:5500",
 )
+
 LOGO_URL = os.getenv(
     "LOGO_URL",
-    "http://localhost:5500/EmailTemplates_Backend/Logo.svg",
+    "http://127.0.0.1:5500/EmailTemplates_Backend/Logo.svg",
 )
+
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 
 
@@ -59,6 +69,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "django_rq",
+    "corsheaders",
     "auth_app",
     "video_app",
 ]
@@ -67,6 +78,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",

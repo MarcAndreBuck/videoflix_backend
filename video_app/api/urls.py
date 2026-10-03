@@ -15,7 +15,7 @@ urlpatterns = [
         name="hls-manifest",
     ),
     path(
-        "video/<int:movie_id>/<str:resolution>/<str:segment>/",
+        "video/<int:movie_id>/<str:resolution>/<str:segment>",
         HLSSegmentView.as_view(),
         name="hls-segment",
     ),

@@ -148,7 +148,8 @@ def send_activation_email(user, token):
     activation_link = create_activation_link(user, token)
     html_message = render_to_string(
         "auth_app/emails/activation_email.html",
-        {"activation_link": activation_link, "logo_url": settings.LOGO_URL},
+        {"activation_link": activation_link, "logo_url": settings.LOGO_URL,
+            "username": user.email},
     )
     send_mail(
         subject="Confirm your email",
@@ -166,7 +167,7 @@ def create_activation_link(user, token):
 
     return (
         f"{settings.FRONTEND_URL.rstrip('/')}"
-        f"/activate/{uid}/{token}/"
+        f"/pages/auth/activate.html?uid={uid}&token={token}"
     )
 
 
@@ -177,7 +178,7 @@ def create_password_reset_link(user, token):
 
     return (
         f"{settings.FRONTEND_URL.rstrip('/')}"
-        f"/confirm-password/{uid}/{token}/"
+        f"/pages/auth/confirm_password.html?uid={uid}&token={token}"
     )
 
 
