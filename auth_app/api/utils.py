@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
+from email.mime.image import MIMEImage
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.middleware.csrf import CsrfViewMiddleware
 from django.template.loader import render_to_string
 from django.utils.encoding import (
@@ -127,36 +129,41 @@ def create_logout_response():
     return response
 
 
-def send_password_reset_email(user, token):
-    """Send an HTML password reset email to the user."""
-    reset_link = create_password_reset_link(user, token)
-    html_message = render_to_string(
-        "auth_app/emails/password_reset_email.html",
-        {"reset_link": reset_link, "logo_url": settings.LOGO_URL},
-    )
-    send_mail(
-        subject="Reset your Password",
-        message=f"Reset your password: {reset_link}",
+def send_html_email(subject, body, recipient, template, context):
+    """Send an HTML email with the embedded Videoflix logo."""
+    html_message = render_to_string(template, context)
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=body,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html_message,
+        to=[recipient],
+    )
+    email.attach_alternative(html_message, "text/html")
+    attach_email_logo(email)
+    email.send()
+
+
+def send_password_reset_email(user, token):
+    """Send a password reset email to the user."""
+    reset_link = create_password_reset_link(user, token)
+    send_html_email(
+        "Reset your Password",
+        f"Reset your password: {reset_link}",
+        user.email,
+        "auth_app/emails/password_reset_email.html",
+        {"reset_link": reset_link},
     )
 
 
 def send_activation_email(user, token):
-    """Send an HTML activation email to the user."""
+    """Send an activation email to the user."""
     activation_link = create_activation_link(user, token)
-    html_message = render_to_string(
+    send_html_email(
+        "Confirm your email",
+        f"Activate your account: {activation_link}",
+        user.email,
         "auth_app/emails/activation_email.html",
-        {"activation_link": activation_link, "logo_url": settings.LOGO_URL,
-            "username": user.email},
-    )
-    send_mail(
-        subject="Confirm your email",
-        message=f"Activate your account: {activation_link}",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        html_message=html_message,
+        {"activation_link": activation_link, "username": user.email},
     )
 
 
@@ -290,3 +297,16 @@ def enforce_csrf(request):
 
     if failure:
         raise AuthenticationFailed('CSRF validation failed.')
+
+
+def attach_email_logo(email):
+    """Attach the Videoflix logo as an inline image."""
+    logo_path = Path(
+        settings.BASE_DIR,
+        "auth_app/static/auth_app/images/Logo.svg",
+    )
+    with logo_path.open("rb") as logo_file:
+        logo = MIMEImage(logo_file.read(), _subtype="svg+xml")
+    logo.add_header("Content-ID", "<videoflix_logo>")
+    logo.add_header("Content-Disposition", "inline", filename="Logo.svg")
+    email.attach(logo)
